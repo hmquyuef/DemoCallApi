@@ -1,0 +1,162 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    Thêm sản phẩm
+</button>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Tên sản phẩm</th>
+            <th scope="col">Đơn giá</th>
+            <th scope="col">Mô tả</th>
+            <th scope="col">Sự kiện</th>
+        </tr>
+    </thead>
+    <tbody id="listproduct"></tbody>
+</table>
+
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Khai báo thông tin sản phẩm</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="tensanpham" class="form-label">Tên sản phẩm</label>
+                    <input type="text" class="form-control" id="tensanpham" placeholder="">
+                </div>
+                <div class="mb-3">
+                    <label for="gia" class="form-label">Giá cả</label>
+                    <input type="number" class="form-control" id="gia" placeholder="">
+                </div>
+                <div class="mb-3">
+                    <label for="mota" class="form-label">Mô tả</label>
+                    <textarea class="form-control" id="mota" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" onclick="addProduct()" class="btn btn-primary">Save</button>
+                <button type="button" onclick="addProductController()" class="btn btn-outline-primary">Save Controller</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            renderTableProduct();
+            renderTableProductController();
+        });
+
+        function renderTableProduct() {
+            $.ajax({
+                url: 'http://localhost:5131/api/products',
+                type: 'GET',
+                success: function (data) {
+                    console.log(data)
+                    if (data.length > 0) {
+                        $("#listproduct").empty();
+                        data.map((item, index) => {
+                            $("#listproduct").append(`<tr>
+                                <td>${index + 1}</td>
+                                <td>${item.name}</td>
+                                <td>${item.price}</td>
+                                <td>${item.description}</td>
+                                <td>Sua</td>
+                            </tr>`);
+                        })
+                    }
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        function renderTableProductController() {
+            $.ajax({
+                url: '/Home/GetProduct',
+                type: 'GET',
+                success: function (data) {
+                    console.log("DATA CONTROLLER: ", data)
+                    if (data.length > 0) {
+                        data.map((item, index) => {
+                            $("#listproduct").append(`<tr>
+                                        <td>${index + 1}</td>
+                                        <td>${item.name}</td>
+                                        <td>${item.price}</td>
+                                        <td>${item.description}</td>
+                                        <td>Sua</td>
+                                    </tr>`);
+                        })
+                    }
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        function addProduct() {
+            let tensanpham = $("#tensanpham").val();
+            let gia = $("#gia").val();
+            let mota = $("#mota").val();
+
+            $.ajax({
+                url: 'http://localhost:5131/api/products',
+                type: 'POST',
+                processData: false,
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: tensanpham,
+                    price: gia,
+                    description: mota
+                }),
+                success: function (data) {
+                    console.log("CREATE: ", data)
+                    $("#staticBackdrop").modal('hide');
+                    renderTableProduct();
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        function addProductController() {
+            let tensanpham = $("#tensanpham").val();
+            let gia = $("#gia").val();
+            let mota = $("#mota").val();
+
+            $.ajax({
+                url: '/Home/AddProduct',
+                type: 'POST',
+                data: {
+                    Name: tensanpham,
+                    Price: gia,
+                    Description: mota
+                },
+                success: function (data) {
+                    console.log(data)
+                    $("#staticBackdrop").modal('hide');
+                    renderTableProduct();
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+    </script>
+}
